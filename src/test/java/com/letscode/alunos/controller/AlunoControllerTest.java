@@ -16,14 +16,16 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
@@ -199,6 +201,34 @@ class AlunoControllerTest {
 
         Assertions.assertEquals("Jonathan2", aluno1.getNome());
     }
+
+    @Test
+    @DisplayName("Deve testar se o aluno foi deletado")
+    void deveTestarSeOAlunoFoiDeletado() throws Exception {
+        when(alunoService.delete(anyLong())).thenReturn("Aluno deletado");
+
+     mockMvc.perform(delete("/alunos/{id}", aluno.getId()))
+                .andExpect(status().isNoContent());
+    }
+
+
+    @Test
+    @DisplayName("Deve alterar o nome do aluno")
+    void deveAlterarONomeDoAluno() throws Exception {
+        when(alunoService.alterarAluno(anyLong(), anyString())).thenReturn(aluno);
+
+        MvcResult result = mockMvc.perform(patch("/alunos/{id}/{nome}", aluno.getId(), aluno.getNome())
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isPartialContent())
+                .andReturn();
+
+        String response = result.getResponse().getContentAsString();
+
+
+        String json = objectMapper.writeValueAsString(aluno);
+        Assertions.assertEquals(json, response);
+    }
+
 
 
 
